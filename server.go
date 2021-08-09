@@ -119,7 +119,7 @@ func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, string(bytes))
+	fmt.Fprint(w, string(bytes))
 }
 
 func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
