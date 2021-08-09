@@ -242,5 +242,5 @@ func main() {
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
 	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("goloads-db.herokuapp.com:%s", port), mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("194.87.92.190:%s", port), mux))
 }
