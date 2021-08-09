@@ -38,6 +38,18 @@ var Test = test{Body: "OK"}
 
 var counter int = 0
 
+func checkForError(err error, errorCode int, w http.ResponseWriter) {
+	if err != nil {
+		if errorCode == 0 {
+			fmt.Println(err)
+				if errorCode != 0{
+					http.Error(w, http.StatusText(errorCode), errorCode)
+				}
+			return
+		}
+	}
+}
+
 func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request){
 	fmt.Println("got request with method", r.Method, counter)
 	counter++
@@ -85,8 +97,11 @@ func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request){
 		)
 		return
 	}
-
-	fmt.Fprintf(w, string(bytes))
+	_, err = w.Write(bytes)
+	if err != nil {
+		return
+	}
+	// fmt.Fprint(w, string(bytes))
 }
 
 func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
