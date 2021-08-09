@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -196,10 +195,16 @@ func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	var newAdvertisement Banner
+	newAdvertisement.ID = RandomString(19)
 	newAdvertisement.Image = newImage.Image
 	newAdvertisement.Domains = newImage.Domains
+	newAdvertisement.DomainURL = newImage.URL
+	newAdvertisement.ImageBase64 = true
 
+	a.advertisementStorage.addAdvertisement(newAdvertisement)
+	a.advertisementStorage.putAdvertisementIntoDB(newAdvertisement.ID)
 
+	w.WriteHeader(http.StatusOK)
 
 }
 
@@ -241,6 +246,5 @@ func main() {
 	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
-	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("194.87.92.190:%s", port), mux))
+	log.Fatal(http.ListenAndServe("194.87.92.190:8080", mux))
 }
