@@ -209,5 +209,5 @@ func main() {
 	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
-	log.Fatal(http.ListenAndServeTLS("194.87.92.190:8080","server.pem", "key.pem", mux))
+	log.Fatal(http.ListenAndServe("194.87.92.190:8080", mux))
 }
