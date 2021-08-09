@@ -71,7 +71,7 @@ func (a *BannerStorage) putAdvertisementIntoDB(id string) {
 
 	var banner Banner
 	banner = a.BannerMap[id]
-	_, err = db.Query(`INSERT INTO "Advertisements" 
+	_, err = db.Query(`INSERT INTO "Banners" 
 					VALUES ($1, $2, $3, $4);`,
 		banner.ID,
 		banner.DomainURL,
