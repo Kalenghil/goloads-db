@@ -69,34 +69,17 @@ func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request){
 	}
 
 	rawData, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-		return
-	}
+	checkForError(err, http.StatusInternalServerError, w)
 	fmt.Println(string(rawData))
 
 	var id_request IDRequest
-	if err := json.Unmarshal(rawData, &id_request); err != nil{
-		http.Error(w,
-			http.StatusText(http.StatusBadRequest),
-			http.StatusBadRequest)
-		fmt.Println(err)
-		return
-	}
+	err = json.Unmarshal(rawData, &id_request)
+	checkForError(err, http.StatusBadRequest, w)
 
 	a.advertisementStorage.deleteAdvertisement(id_request.ID)
 
 	bytes, err := json.Marshal(Test)
-	if err != nil {
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
+	checkForError(err, http.StatusInternalServerError, w)
 	_, err = w.Write(bytes)
 	if err != nil {
 		return
@@ -110,14 +93,7 @@ func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 	ads := a.advertisementStorage.getAdvertisements()
 
 	bytes, err := json.Marshal(ads)
-	if err != nil {
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
+	checkForError(err, http.StatusInternalServerError, w)
 
 	fmt.Fprint(w, string(bytes))
 }
@@ -131,14 +107,7 @@ func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	rawBody, err := ioutil.ReadAll(r.Body)
 	fmt.Println(string(rawBody))
-	if err != nil {
-		http.Error(
-			w,
-			http.StatusText(http.StatusBadRequest),
-			http.StatusBadRequest,
-		)
-		return
-	}
+	checkForError(err, http.StatusBadRequest, w)
 	var newAdvertisement Banner
 	err = json.Unmarshal(rawBody, &newAdvertisement)
 	if err != nil {
@@ -150,16 +119,9 @@ func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 	a.advertisementStorage.putAdvertisementIntoDB(newAdvertisement.ID)
 
 	bytes, err := json.Marshal(Test)
-	if err != nil {
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
+	checkForError(err, http.StatusInternalServerError, w)
 
-	fmt.Fprintf(w, string(bytes))
+	fmt.Fprint(w, string(bytes))
 
 }
 
@@ -170,16 +132,9 @@ func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request)
 	analytics := a.analyticsStorage.AnalyticsMap[id]
 
 	bytes, err := json.Marshal(analytics)
-	if err != nil{
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
+	checkForError(err, http.StatusInternalServerError, w)
 
-	fmt.Fprintf(w, string(bytes))
+	fmt.Fprint(w, string(bytes))
 
 
 }
@@ -194,14 +149,7 @@ func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Req
 	PreInnitiallizeStuff(w, r)
 
 	rawData, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(
-			w,
-			http.StatusText(http.StatusBadRequest),
-			http.StatusBadRequest,
-		)
-		return
-	}
+	checkForError(err, http.StatusBadRequest, w)
 
 	var newImage BannerRequest
 	if err := json.Unmarshal(rawData, &newImage); err != nil {
@@ -261,5 +209,5 @@ func main() {
 	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
-	log.Fatal(http.ListenAndServe("194.87.92.190:8080", mux))
+	log.Fatal(http.ListenAndServeTLS("194.87.92.190:8080","server.crt", "server.key", mux))
 }
