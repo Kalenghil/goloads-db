@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/lib/pq"
+	 "github.com/lib/pq"
 )
 
 type DataBase interface {
@@ -242,5 +242,5 @@ func main() {
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
 	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("goloads-db.herokuapp.com:%s", port), mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%s", port), mux))
 }
