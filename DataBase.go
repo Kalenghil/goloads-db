@@ -1,5 +1,7 @@
 package main
 
+import "math/rand"
+
 type User struct {
 	ID       int    `json:"id"`
 	Login    string `json:"login"`
@@ -11,8 +13,8 @@ type UserStorage struct {
 }
 
 type Banner struct {
-	ID          string   `json:"id"`
-	Image       string   `json:"image"`
+	BannerID string `json:"id"`
+	Image    string `json:"image"`
 	DomainURL   string   `json:"url"`
 	Domains     []string `json:"domains"`
 	ImageBase64 bool     `json:"image-base64"`
@@ -35,25 +37,29 @@ type AnalyticsStorage struct {
 }
 
 func (a *BannerStorage) addAdvertisement(ad Banner) {
-	a.BannerMap[ad.ID] = ad
+	a.BannerMap[ad.BannerID] = ad
 }
 
-func (a *BannerStorage) getAdvertisements() []Banner {
+func (a *BannerStorage) getAdvertisements() Banner {
 	var ads []Banner
 	for _, ad := range a.BannerMap {
 		ads = append(ads, ad)
 	}
-	return ads
+	return ads[rand.Intn(len(ads)) - 1]
 }
 
 func (a *BannerStorage) deleteAdvertisement(id string) {
 	delete(a.BannerMap, id)
 }
 
+func (b BannerStorage) sendBanner(id string) Banner {
+	return b.BannerMap[id]
+}
+
 func (a AnalyticsStorage) getAnalytics(id string) Analytics {
 	return a.AnalyticsMap[id]
 }
 
-func (s BannerStorage) sendBanner(id string) Banner {
-	return s.BannerMap[id]
+func (a AnalyticsStorage) addClick(id string) {
+	a.AnalyticsMap[id].Clicks[0]++
 }

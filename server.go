@@ -25,9 +25,9 @@ type IDRequest struct {
 }
 
 type BannerRequest struct {
-	URL string `json:"url"`
-	Image string `json:"image"`
-	Domains     []string `json:"domains"`
+	URL     string   `json:"url"`
+	Image   string   `json:"image"`
+	Domains []string `json:"domains"`
 }
 
 type test struct {
@@ -42,15 +42,15 @@ func checkForError(err error, errorCode int, w http.ResponseWriter) {
 	if err != nil {
 		if errorCode == 0 {
 			fmt.Println(err)
-				if errorCode != 0{
-					http.Error(w, http.StatusText(errorCode), errorCode)
-				}
+			if errorCode != 0 {
+				http.Error(w, http.StatusText(errorCode), errorCode)
+			}
 			return
 		}
 	}
 }
 
-func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request){
+func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got request with method", r.Method, counter)
 	counter++
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -58,10 +58,10 @@ func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 }
 
-func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request){
+func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
-	if r.Method != "DELETE"{
+	if r.Method != "DELETE" {
 		http.Error(w,
 			http.StatusText(http.StatusBadRequest),
 			http.StatusBadRequest)
@@ -116,13 +116,32 @@ func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	a.advertisementStorage.addAdvertisement(newAdvertisement)
 
-	a.advertisementStorage.putAdvertisementIntoDB(newAdvertisement.ID)
+	a.advertisementStorage.putAdvertisementIntoDB(newAdvertisement.BannerID)
 
 	bytes, err := json.Marshal(Test)
 	checkForError(err, http.StatusInternalServerError, w)
 
 	fmt.Fprint(w, string(bytes))
 
+}
+
+func (a *adsServer) receiveClickHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w,
+			http.StatusText(http.StatusBadRequest),
+			http.StatusOK)
+		return
+	}
+
+	rawBody, err := ioutil.ReadAll(r.Body)
+	fmt.Println(string(rawBody))
+	checkForError(err, http.StatusBadRequest, w)
+
+	var addClicks IDRequest
+	err = json.Unmarshal(rawBody, &addClicks)
+
+	a.analyticsStorage.addClick(addClicks.ID)
+	a.analyticsStorage.addClickToDB(addClicks.ID)
 }
 
 func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request) {
@@ -135,7 +154,6 @@ func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request)
 	checkForError(err, http.StatusInternalServerError, w)
 
 	fmt.Fprint(w, string(bytes))
-
 
 }
 
@@ -158,14 +176,14 @@ func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	var newAdvertisement Banner
-	newAdvertisement.ID = RandomString(19)
+	newAdvertisement.BannerID = RandomString(19)
 	newAdvertisement.Image = newImage.Image
 	newAdvertisement.Domains = newImage.Domains
 	newAdvertisement.DomainURL = newImage.URL
 	newAdvertisement.ImageBase64 = true
 
 	a.advertisementStorage.addAdvertisement(newAdvertisement)
-	a.advertisementStorage.putAdvertisementIntoDB(newAdvertisement.ID)
+	a.advertisementStorage.putAdvertisementIntoDB(newAdvertisement.BannerID)
 
 	w.WriteHeader(http.StatusOK)
 
@@ -176,15 +194,14 @@ func main() {
 	// initializing test objects
 
 	TestAdvertisement := Banner{
-		ID:        RandomString(19),
-		Image:     "https://klike.net/uploads/posts/2019-05/1556708032_1.jpg",
-		DomainURL: "yandex.ru",
-		Domains:   []string{"stackoverflow.com"},
+		BannerID:    "nbn9ewnd",
+		Image:       "https://klike.net/uploads/posts/2019-05/1556708032_1.jpg",
+		DomainURL:   "yandex.ru",
+		Domains:     []string{"stackoverflow.com"},
 		ImageBase64: false,
 	}
 
-	TestAdvertisementStorage := BannerStorage{map[string]Banner{TestAdvertisement.ID: TestAdvertisement}}
-
+	TestAdvertisementStorage := BannerStorage{map[string]Banner{TestAdvertisement.BannerID: TestAdvertisement}}
 
 	arrayLength := 14
 	TestAnalytics := Analytics{
@@ -209,5 +226,6 @@ func main() {
 	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
-	log.Fatal(http.ListenAndServeTLS("doats.ml:8080","certificate.crt", "private.key", mux))
+	mux.Handle("/clicked", http.HandlerFunc(AdsServer.receiveClickHandler))
+	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }

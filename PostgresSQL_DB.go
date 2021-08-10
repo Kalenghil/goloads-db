@@ -24,6 +24,9 @@ const (
 	dbname   = "d53l1p7nfaa2qf"
 )
 
+var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
+	host, port, user, password, dbname)
+
 func InnitializeDB() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s",
@@ -39,9 +42,9 @@ func InnitializeDB() *sql.DB {
 		panic(err)
 	}
 
-	_, err = db.Query(`create table if not exists "Banners"
+	_, err = db.Query(`CREATE TABLE IF NOT EXISTS "Banners"
 							(
-    							"ID" text not null,
+    							"BannerID" text not null,
 								"DomainURL" text not null,
 								"Image"text,
 								"Domains" text[]
@@ -54,10 +57,7 @@ func InnitializeDB() *sql.DB {
 	return db
 }
 
-func (a *BannerStorage) putAdvertisementIntoDB(id string) {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s",
-		host, port, user, password, dbname)
+func (b *BannerStorage) putAdvertisementIntoDB(id string) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -70,13 +70,30 @@ func (a *BannerStorage) putAdvertisementIntoDB(id string) {
 	}
 
 	var banner Banner
-	banner = a.BannerMap[id]
+	banner = b.BannerMap[id]
 	_, err = db.Query(`INSERT INTO "Banners" 
-					VALUES ($1, $2, $3, $4);`,
-		banner.ID,
+					VALUES ($1, $2, $3, $4, $5);`,
+		banner.BannerID,
 		banner.DomainURL,
 		banner.Image,
-		pq.Array(banner.Domains))
+		pq.Array(banner.Domains),
+		banner.ImageBase64,
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = db.Query(`INSERT INTO "Analytics" 
+					VALUES ($1, $2, $3, $4, $5);`,
+		banner.BannerID,
+		pq.Array([]int{}),
+		pq.Array([]int{}),
+		pq.Array([]int{}),
+		pq.Array([]int{}),
+		8080,
+	)
 
 	if err != nil {
 		fmt.Println(err)
@@ -84,10 +101,7 @@ func (a *BannerStorage) putAdvertisementIntoDB(id string) {
 	}
 }
 
-func (a *BannerStorage) getAdvertisementsFromDB(id string) Banner {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s",
-		host, port, user, password, dbname)
+func (b *BannerStorage) getAdvertisementsFromDB(id string) Banner {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -100,21 +114,43 @@ func (a *BannerStorage) getAdvertisementsFromDB(id string) Banner {
 	}
 
 	var banner Banner
-	rows, err := db.Query(`SELECT * FROM "Banners" WHERE ID=$1`, id)
+	rows, err := db.Query(`SELECT * FROM "Banners" WHERE BannerID=$1`, id)
 	if err != nil {
 		fmt.Println(err)
 		return Banner{}
 	}
 
-	for rows.Next(){
-		err = rows.Scan(&banner.ID, &banner.Image, &banner.DomainURL, &banner.Domains)
-		if err != nil{
+	for rows.Next() {
+		err = rows.Scan(&banner.BannerID, &banner.Image, &banner.DomainURL, &banner.Domains)
+		if err != nil {
 			fmt.Println(err)
 			return Banner{}
 		}
 	}
 
 	return banner
+}
+
+func (a *AnalyticsStorage) addClickToDB(id string) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var clicks []int
+	row := db.QueryRow(`SELECT Clicks FROM "Analytics" WHERE BannerID=$1`, id)
+
+	if err := row.Scan(&clicks); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = db.Query(`UPDATE "Analytics" SET Clicks=$1 WHERE BannerID=$2`, clicks, id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 
 }
