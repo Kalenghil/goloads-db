@@ -126,6 +126,7 @@ func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *adsServer) receiveClickHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
 		http.Error(w,
 			http.StatusText(http.StatusBadRequest),
