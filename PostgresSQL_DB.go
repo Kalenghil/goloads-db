@@ -17,11 +17,11 @@ import (
 )*/
 
 const (
-	host     = "ec2-52-17-1-206.eu-west-1.compute.amazonaws.com"
+	host     = "localhost"
 	port     = 5432
-	user     = "hjzokxbtzadjhv"
-	password = "c20b05c35a896d812208b2e45c22a51ef896d0270af876d67f023cf2ee776424"
-	dbname   = "d53l1p7nfaa2qf"
+	user     = "postgres"
+	password = "postgres"
+	dbname   = "goloads"
 )
 
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
