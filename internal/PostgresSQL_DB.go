@@ -139,7 +139,7 @@ func (a *AnalyticsStorage) addClickToDB(id string) {
 	defer db.Close()
 
 	var clicks []int
-	row := db.QueryRow(`SELECT Clicks FROM "Analytics" WHERE BannerID=$1`, id)
+	row := db.QueryRow(`SELECT "Clicks" FROM "Analytics" WHERE BannerID=$1`, id)
 
 	if err := row.Scan(&clicks); err != nil {
 		fmt.Println(err)
