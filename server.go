@@ -239,6 +239,7 @@ func main() {
 	TestAnalyticsStorage := AnalyticsStorage{map[string]Analytics{TestAnalytics.BannerID: TestAnalytics}}
 	AdsServer := adsServer{UserStorage{}, BannerStorage{}, TestAnalyticsStorage}
 	var bannerStorage BannerStorage = BannerStorage{map[string]Banner{}}
+	fmt.Println(AdsServer.bannerStorage.getAdvertisementsFromDB())
 	for _, banner := range AdsServer.bannerStorage.getAdvertisementsFromDB(){
 		bannerStorage.BannerMap[banner.BannerID] = banner
 	}
