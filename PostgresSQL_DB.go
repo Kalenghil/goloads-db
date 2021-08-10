@@ -122,11 +122,12 @@ func (b *BannerStorage) getAdvertisementsFromDB() []Banner {
 	i := 0
 	for rows.Next() {
 		err = rows.Scan(&banners[i].BannerID, &banners[i].Image, &banners[i].DomainURL, &banners[i].Domains)
+		fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa %v\n", banners)
+		i++
 		if err != nil {
 			fmt.Println(err)
 			return []Banner{}
 		}
-		i++
 	}
 
 	return banners
