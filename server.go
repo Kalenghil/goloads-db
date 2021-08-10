@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -211,7 +210,7 @@ func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var newRequest TelegramIDRequest
-	rawBytes, err := io.ReadAll(r.Body)
+	rawBytes, err := ioutil.ReadAll(r.Body)
 	checkForError(err, http.StatusBadRequest, w)
 
 	err = json.Unmarshal(rawBytes, &newRequest)
