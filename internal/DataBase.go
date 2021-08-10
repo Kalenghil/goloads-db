@@ -5,9 +5,12 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
-	Login    string `json:"login"`
-	Password string `json:"password"`
+	Firstname string  `json:"firstname"`
+	Lastname  string  `json:"lastname"`
+	ID        int     `json:"id"`
+	Account   int     `json:"account"`
+	Token     string  `json:"token"`
+	Money     float64 `json:"money"`
 }
 
 type UserStorage struct {
@@ -15,8 +18,8 @@ type UserStorage struct {
 }
 
 type Banner struct {
-	BannerID string `json:"id"`
-	Image    string `json:"image"`
+	BannerID    string   `json:"id"`
+	Image       string   `json:"image"`
 	DomainURL   string   `json:"url"`
 	Domains     []string `json:"domains"`
 	ImageBase64 bool     `json:"image-base64"`

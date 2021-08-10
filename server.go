@@ -110,7 +110,7 @@ func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bytes))
 }
 
-func (a *adsServer) receiveBannerHandler(w http.ResponseWriter, r *http.Request) {
+func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "POST" {
@@ -228,6 +228,16 @@ func main() {
 
 	// initializing test objects
 
+	TestAdvertisement := Banner{
+		BannerID:    "nbn9ewnd",
+		Image:       "https://klike.net/uploads/posts/2019-05/1556708032_1.jpg",
+		DomainURL:   "yandex.ru",
+		Domains:     []string{"stackoverflow.com"},
+		ImageBase64: false,
+	}
+
+	TestAdvertisementStorage := BannerStorage{map[string]Banner{TestAdvertisement.BannerID: TestAdvertisement}}
+
 	arrayLength := 14
 	TestAnalytics := Analytics{
 		BannerID:     "nbn9ewnd",
@@ -237,25 +247,20 @@ func main() {
 		UniqueViews:  RandomArray(arrayLength),
 	}
 	TestAnalyticsStorage := AnalyticsStorage{map[string]Analytics{TestAnalytics.BannerID: TestAnalytics}}
-	AdsServer := adsServer{UserStorage{}, BannerStorage{}, TestAnalyticsStorage}
-	var bannerStorage BannerStorage = BannerStorage{map[string]Banner{}}
-	fmt.Println(AdsServer.bannerStorage.getAdvertisementsFromDB())
-	for _, banner := range AdsServer.bannerStorage.getAdvertisementsFromDB(){
-		bannerStorage.BannerMap[banner.BannerID] = banner
-	}
+	AdsServer := adsServer{UserStorage{}, TestAdvertisementStorage, TestAnalyticsStorage}
 
 	// initializing PostgreSQL database
 
 	InnitializeDB()
 
 	// initializing http handlers
-	fmt.Println(bannerStorage.BannerMap)
+
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(AdsServer.sendBannerHandler))
 	mux.Handle("/delete", http.HandlerFunc(AdsServer.deleteBannerHandler))
+	mux.Handle("add/image", http.HandlerFunc(AdsServer.receiveBannerImageHandler))
 	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
-	mux.Handle("/add", http.HandlerFunc(AdsServer.receiveBannerHandler))
-	mux.Handle("/add/image", http.HandlerFunc(AdsServer.receiveBannerImageHandler))
+	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
 	mux.Handle("/clicked", http.HandlerFunc(AdsServer.receiveClickHandler))
 	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
