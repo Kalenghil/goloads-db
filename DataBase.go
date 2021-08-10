@@ -49,7 +49,7 @@ func (a *BannerStorage) getAdvertisements() Banner {
 		ads = append(ads, ad)
 	}
 	fmt.Println(len(ads), rand.Intn(len(ads)) - 1)
-	return ads[rand.Intn(len(ads)) - 1]
+	return ads[rand.Intn(len(ads) - 1)]
 }
 
 func (a *BannerStorage) deleteAdvertisement(id string) {
