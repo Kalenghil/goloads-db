@@ -101,7 +101,7 @@ func (b *BannerStorage) putAdvertisementIntoDB(id string) {
 	}
 }
 
-func (b *BannerStorage) getAdvertisementsFromDB(id string) Banner {
+func (b *BannerStorage) getAdvertisementsFromDB() []Banner {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -113,22 +113,23 @@ func (b *BannerStorage) getAdvertisementsFromDB(id string) Banner {
 		panic(err)
 	}
 
-	var banner Banner
-	rows, err := db.Query(`SELECT * FROM "Banners" WHERE BannerID=$1`, id)
+	var banners []Banner
+	rows, err := db.Query(`SELECT * FROM "Banners"`)
 	if err != nil {
 		fmt.Println(err)
-		return Banner{}
+		return []Banner{}
 	}
-
+	i := 0
 	for rows.Next() {
-		err = rows.Scan(&banner.BannerID, &banner.Image, &banner.DomainURL, &banner.Domains)
+		err = rows.Scan(&banners[i].BannerID, &banners[i].Image, &banners[i].DomainURL, &banners[i].Domains)
 		if err != nil {
 			fmt.Println(err)
-			return Banner{}
+			return []Banner{}
 		}
+		i++
 	}
 
-	return banner
+	return banners
 }
 
 func (a *AnalyticsStorage) addClickToDB(id string) {
