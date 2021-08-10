@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,8 +21,16 @@ type adsServer struct {
 	analyticsStorage     AnalyticsStorage
 }
 
-type IDRequest struct {
+type BannerIDRequest struct {
 	ID string `json:"id"`
+}
+
+type TelegramIDRequest struct {
+	TelegramID int `json:"id"`
+}
+
+type MoneyResponse struct {
+	Money float64 `json:"money"`
 }
 
 type BannerRequest struct {
@@ -50,6 +59,10 @@ func checkForError(err error, errorCode int, w http.ResponseWriter) {
 	}
 }
 
+func returnHTTPError(errorCode int, w http.ResponseWriter){
+	http.Error(w, http.StatusText(errorCode), errorCode)
+}
+
 func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got request with method", r.Method, counter)
 	counter++
@@ -72,7 +85,7 @@ func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) 
 	checkForError(err, http.StatusInternalServerError, w)
 	fmt.Println(string(rawData))
 
-	var id_request IDRequest
+	var id_request BannerIDRequest
 	err = json.Unmarshal(rawData, &id_request)
 	checkForError(err, http.StatusBadRequest, w)
 
@@ -138,7 +151,7 @@ func (a *adsServer) receiveClickHandler(w http.ResponseWriter, r *http.Request) 
 	fmt.Println(string(rawBody))
 	checkForError(err, http.StatusBadRequest, w)
 
-	var addClicks IDRequest
+	var addClicks BannerIDRequest
 	err = json.Unmarshal(rawBody, &addClicks)
 
 	a.analyticsStorage.addClick(addClicks.ID)
@@ -190,6 +203,28 @@ func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Req
 
 }
 
+func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+	if r.Method != "POST" {
+	 	returnHTTPError(http.StatusBadRequest, w)
+	 	return
+	}
+
+	var newRequest TelegramIDRequest
+	rawBytes, err := io.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	err = json.Unmarshal(rawBytes, &newRequest)
+	checkForError(err, http.StatusBadRequest, w)
+
+	user := a.userStorage.getUserByID(newRequest.TelegramID)
+
+	var moneyAm MoneyResponse
+	moneyAm.Money = user.Money
+	bytes, err := json.Marshal(moneyAm)
+	w.Write(bytes)
+}
+
 func main() {
 
 	// initializing test objects
@@ -228,5 +263,6 @@ func main() {
 	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
 	mux.Handle("/clicked", http.HandlerFunc(AdsServer.receiveClickHandler))
+	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }

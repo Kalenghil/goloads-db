@@ -138,15 +138,7 @@ func (a *AnalyticsStorage) addClickToDB(id string) {
 	}
 	defer db.Close()
 
-	var clicks []int
-	row := db.QueryRow(`SELECT Clicks FROM "Analytics" WHERE BannerID=$1`, id)
-
-	if err := row.Scan(&clicks); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	_, err = db.Query(`UPDATE "Analytics" SET Clicks=$1 WHERE BannerID=$2`, clicks, id)
+	_, err = db.Query(`UPDATE "Analytics" SET "Clicks"="clicks" + 1 WHERE BannerID=$1`, id)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -154,5 +146,24 @@ func (a *AnalyticsStorage) addClickToDB(id string) {
 
 
 }
+
+func (a *UserStorage) getUserByID(telegramID int) User{
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var user User
+	row := db.QueryRow(`SELECT * FROM "Users" WHERE ID=$1`, telegramID)
+	if err := row.Scan(&user); err != nil {
+		fmt.Println(err)
+		return User{}
+	}
+
+	return user
+}
+
+
 
 // func (a *BannerStorage) getAdvertisementFromDB (id string)
