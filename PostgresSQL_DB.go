@@ -144,10 +144,9 @@ func (a *AnalyticsStorage) addClickToDB(id string) {
 		return
 	}
 
-
 }
 
-func (a *UserStorage) getUserByID(telegramID int) User{
+func (a *UserStorage) getUserByID(telegramID int) User {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -156,14 +155,19 @@ func (a *UserStorage) getUserByID(telegramID int) User{
 
 	var user User
 	row := db.QueryRow(`SELECT * FROM "Users" WHERE ID=$1`, telegramID)
-	if err := row.Scan(&user); err != nil {
+	if err := row.Scan(
+		&user.Firstname,
+		&user.Lastname,
+		&user.ID,
+		&user.Account,
+		&user.Money,
+		&user.Token,
+		); err != nil {
 		fmt.Println(err)
 		return User{}
 	}
 
 	return user
 }
-
-
 
 // func (a *BannerStorage) getAdvertisementFromDB (id string)
