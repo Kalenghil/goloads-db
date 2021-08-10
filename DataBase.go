@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type User struct {
 	ID       int    `json:"id"`
@@ -45,6 +48,7 @@ func (a *BannerStorage) getAdvertisements() Banner {
 	for _, ad := range a.BannerMap {
 		ads = append(ads, ad)
 	}
+	fmt.Println(len(ads), rand.Intn(len(ads)) - 1)
 	return ads[rand.Intn(len(ads)) - 1]
 }
 
