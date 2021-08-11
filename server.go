@@ -108,6 +108,7 @@ func (a *adsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Reques
 	id_response.TelegramID = a.userStorage.returnUserIDFromExtensionID(id_request.ExtensionID)
 
 	bytes, err := json.Marshal(id_response)
+	fmt.Println(string(bytes))
 	w.Write(bytes)
 }
 
