@@ -251,6 +251,24 @@ func (a *adsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Reque
 
 }*/
 
+func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Request){
+	PreInnitiallizeStuff(w, r)
+	if r.Method != "POST" {
+		returnHTTPError(http.StatusBadRequest, w)
+		return
+	}
+
+	rawBytes, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	var sendMoneyRequest TelegramIDRequest
+	json.Unmarshal(rawBytes, &sendMoneyRequest)
+
+
+}
+
+
+
 func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
@@ -303,9 +321,10 @@ func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 	rawBytes, err := ioutil.ReadAll(r.Body)
 	checkForError(err, http.StatusBadRequest, w)
 
-	var newUser User
+	var newUser newUserRequest
 	err = json.Unmarshal(rawBytes, &newUser)
 	checkForError(err, http.StatusBadRequest, w)
+
 
 }
 

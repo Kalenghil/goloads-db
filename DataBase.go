@@ -9,8 +9,10 @@ type User struct {
 	Lastname  string  `json:"lastname"`
 	ID        int     `json:"id"`
 	Account   int     `json:"account"`
-	Token     string  `json:"token"`
 	Money     float64 `json:"money"`
+	PhotoURL  string  `json:"photo_url"`
+	Username  string  `json:"username"`
+	Hash      string  `json:"hash"`
 }
 
 type UserStorage struct {
