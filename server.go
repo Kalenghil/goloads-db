@@ -15,52 +15,16 @@ const (
 	MoneyForClick = 0.3
 )
 
-type ExtensionIDRequest struct {
-	ExtensionID string `json:"extension_id"`
-}
-
-type adsServer struct {
+type AdsServer struct {
 	userStorage      UserStorage
 	bannerStorage    BannerStorage
 	analyticsStorage AnalyticsStorage
-}
-
-type BannerIDRequest struct {
-	ID string `json:"id"`
-}
-
-type BannerGotInteractedRequest struct {
-	BannerID   string `json:"banner_id"`
-	TelegramID int    `json:"user_id"`
-}
-
-type TelegramIDRequest struct {
-	TelegramID int `json:"id"`
-}
-
-type MoneyResponse struct {
-	Money    float64 `json:"money"`
-	Username string  `json:"username"`
-	PhotoURL string  `json:"photo_url"`
-}
-
-type BannerRequest struct {
-	URL     string   `json:"url"`
-	Domains []string `json:"domains"`
 }
 
 type test struct {
 	Body string `json:"body"`
 }
 
-type newUserRequest struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Hash      string `json:"hash"`
-	ID        int    `json:"id"`
-	PhotoUrl  string `json:"photoUrl"`
-	UserName  string `json:"username"`
-}
 
 var Test = test{Body: "OK"}
 
@@ -90,7 +54,7 @@ func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 }
 
-func (a *adsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "POST" {
@@ -111,7 +75,7 @@ func (a *adsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Reques
 	w.Write(bytes)
 }
 
-func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "DELETE" {
@@ -140,7 +104,7 @@ func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) 
 	// fmt.Fprint(w, string(bytes))
 }
 
-func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	ads := a.bannerStorage.getRandomBanner()
@@ -151,7 +115,7 @@ func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bytes))
 }
 
-/*func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
+/*func (a *AdsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "POST" {
@@ -178,7 +142,7 @@ func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 
 }*/
 
-func (a *adsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
 		http.Error(w,
@@ -198,7 +162,7 @@ func (a *adsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request)
 	a.userStorage.addMoney(addView.TelegramID, MoneyForClick)
 }
 
-func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	id := r.URL.Query().Get("id")
@@ -211,7 +175,7 @@ func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request)
 
 }
 
-func (a *adsServer) sendFaviconHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) sendFaviconHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	http.ServeFile(w, r, "favicon.ico")
@@ -219,7 +183,7 @@ func (a *adsServer) sendFaviconHandler(w http.ResponseWriter, r *http.Request) {
 
 var newBanner Banner
 
-func (a *adsServer) receiveBannerFromAdmin1(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) receiveBannerFromAdmin1(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	rawData, err := ioutil.ReadAll(r.Body)
@@ -246,7 +210,7 @@ func (a *adsServer) receiveBannerFromAdmin1(w http.ResponseWriter, r *http.Reque
 	w.Write(bytes)
 }
 
-func (a *adsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	rawData, err := ioutil.ReadAll(r.Body)
@@ -259,7 +223,7 @@ func (a *adsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Reque
 
 }
 
-/*func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Request) {
+/*func (a *AdsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	rawData, err := ioutil.ReadAll(r.Body)
@@ -284,7 +248,7 @@ func (a *adsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Reque
 
 }*/
 
-func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
 		returnHTTPError(http.StatusBadRequest, w)
@@ -308,7 +272,7 @@ func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 	w.Write(bytes)
 }
 
-func (a *adsServer) bannerWatchedHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) bannerWatchedHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
 		http.Error(w,
@@ -328,7 +292,7 @@ func (a *adsServer) bannerWatchedHandler(w http.ResponseWriter, r *http.Request)
 	a.userStorage.addMoney(addClicks.TelegramID, MoneyForView)
 }
 
-func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "POST" {
@@ -339,7 +303,7 @@ func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 	rawBytes, err := ioutil.ReadAll(r.Body)
 	checkForError(err, http.StatusBadRequest, w)
 
-	var NewUserRequest newUserRequest
+	var NewUserRequest NewUserRequest
 	err = json.Unmarshal(rawBytes, &NewUserRequest)
 	checkForError(err, http.StatusBadRequest, w)
 
@@ -354,7 +318,7 @@ func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 
 }
 
-func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "POST" {
@@ -369,21 +333,46 @@ func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 	err = json.Unmarshal(rawBytes, &userToSendMoney)
 	checkForError(err, http.StatusBadRequest, w)
 
-	response, err := sendMoneyToUser(userToSendMoney.TelegramID, a.userStorage.getUserByID(userToSendMoney.TelegramID).Money)
+	var moneyAm = a.userStorage.getUserByID(userToSendMoney.TelegramID).Money
+	var statusOK = false
+	response, err := sendMoneyToUser(userToSendMoney.TelegramID, moneyAm)
 
-	if err != nil {
+	if err != nil || response.StatusCode != http.StatusOK{
 		returnHTTPError(http.StatusInternalServerError, w)
 		return
 	} else {
 		a.userStorage.resetUserMoney(userToSendMoney.TelegramID)
+		statusOK = true
 	}
 
 	Test.Body = "OK"
 
+	a.analyticsStorage.addTransactionToDB(userToSendMoney.TelegramID, moneyAm, statusOK)
 	bytes, err := ioutil.ReadAll(response.Body)
 	checkForError(err, http.StatusInternalServerError, w)
 	fmt.Println(string(bytes))
 	w.Write(bytes)
+}
+
+func (a *AdsServer) linkExtensionIDToUserHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+
+	if r.Method != "POST" {
+		http.Error(w,
+			http.StatusText(http.StatusBadRequest),
+			http.StatusBadRequest)
+		return
+	}
+	
+	rawBytes, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	var linkRequest LinkExtensionIDRequest
+	err = json.Unmarshal(rawBytes, &linkRequest)
+	checkForError(err, http.StatusBadRequest, w)
+
+	a.userStorage.linkExtensionID(linkRequest.ExtensionIDRequest, linkRequest.UserID)
+	w.WriteHeader(http.StatusOK)
 }
 
 func main() {
@@ -409,7 +398,7 @@ func main() {
 		UniqueViews:  RandomArray(arrayLength),
 	}
 	TestAnalyticsStorage := AnalyticsStorage{map[string]Analytics{TestAnalytics.BannerID: TestAnalytics}}
-	AdsServer := adsServer{UserStorage{}, TestAdvertisementStorage, TestAnalyticsStorage}
+	GoloAdsServer := AdsServer{UserStorage{}, TestAdvertisementStorage, TestAnalyticsStorage}
 
 	// initializing PostgreSQL database
 
@@ -418,18 +407,19 @@ func main() {
 	// initializing http handlers
 
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(AdsServer.sendBannerHandler))
-	mux.Handle("/delete", http.HandlerFunc(AdsServer.deleteBannerHandler))
-	mux.Handle("/add/image", http.HandlerFunc(AdsServer.receiveBannerFromAdmin2))
-	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
-	mux.Handle("/add", http.HandlerFunc(AdsServer.receiveBannerFromAdmin1))
-	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
-	mux.Handle("/clicked", http.HandlerFunc(AdsServer.bannerClickedHandler))
-	mux.Handle("/watched", http.HandlerFunc(AdsServer.bannerWatchedHandler))
-	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
-	mux.Handle("/info/withdraw", http.HandlerFunc(AdsServer.sendMoneyToUserHandler))
-	mux.Handle("/user", http.HandlerFunc(AdsServer.sendExtensionIDHandler))
-	mux.Handle("/register", http.HandlerFunc(AdsServer.registerUserHandler))
+	mux.Handle("/", http.HandlerFunc(GoloAdsServer.sendBannerHandler))
+	mux.Handle("/delete", http.HandlerFunc(GoloAdsServer.deleteBannerHandler))
+	mux.Handle("/add/image", http.HandlerFunc(GoloAdsServer.receiveBannerFromAdmin2))
+	mux.Handle("/favicon.ico", http.HandlerFunc(GoloAdsServer.sendFaviconHandler))
+	mux.Handle("/add", http.HandlerFunc(GoloAdsServer.receiveBannerFromAdmin1))
+	mux.Handle("/analytics", http.HandlerFunc(GoloAdsServer.sendAnalyticsHandler))
+	mux.Handle("/clicked", http.HandlerFunc(GoloAdsServer.bannerClickedHandler))
+	mux.Handle("/watched", http.HandlerFunc(GoloAdsServer.bannerWatchedHandler))
+	mux.Handle("/info/get", http.HandlerFunc(GoloAdsServer.getUserMoneyHandler))
+	mux.Handle("/info/withdraw", http.HandlerFunc(GoloAdsServer.sendMoneyToUserHandler))
+	mux.Handle("/user", http.HandlerFunc(GoloAdsServer.sendExtensionIDHandler))
+	mux.Handle("/register", http.HandlerFunc(GoloAdsServer.registerUserHandler))
+	mux.Handle("/user/link", http.HandlerFunc(GoloAdsServer.linkExtensionIDToUserHandler))
 
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }

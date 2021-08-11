@@ -160,6 +160,20 @@ func (a *AnalyticsStorage) addViewToDB(banner_id string, user_id int) {
 	}
 }
 
+func (a AnalyticsStorage) addTransactionToDB(user_id int, money float64, statusOK bool) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`INSERT INTO "Transactions" VALUES ($1, $2, $3, $4)`, RandomString(30), money, user_id, statusOK)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
 func (a *UserStorage) addUserToDB(user User) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -234,6 +248,19 @@ func (u *UserStorage) addMoney(telegramID int, moneyAmount float64) {
 			    "Gopeykis"="Gopeykis"+$2
 			WHERE ID=$3`,
 		gt, gp, telegramID)
+
+}
+
+func (u *UserStorage) linkExtensionID(extension_id string, user_id int) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`UPDATE "Users" 
+							  SET "ExtensionID"=$1 
+							  WHERE ID=$2`, extension_id, user_id)
 
 }
 

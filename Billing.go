@@ -26,5 +26,6 @@ func sendMoneyToUser(user_id int, money_am float64) (*http.Response, error) {
 	postBody, _ := json.Marshal(moneyRequest)
 	responseBody := bytes.NewBuffer(postBody)
 	response, err := http.Post("https://bank.goto.msk.ru/api/send", "application/json", responseBody)
+
 	return response, err
 }
