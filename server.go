@@ -10,6 +10,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	MoneyForView = 0.1
+	MoneyForClick = 0.5
+)
+
 type adsServer struct {
 	userStorage      UserStorage
 	bannerStorage    BannerStorage
@@ -164,6 +169,7 @@ func (a *adsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request)
 	err = json.Unmarshal(rawBody, &addView)
 
 	a.analyticsStorage.addClickToDB(addView.BannerID, addView.TelegramID)
+	a.userStorage.addMoney(addView.TelegramID, MoneyForClick)
 }
 
 func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request) {
@@ -292,6 +298,7 @@ func (a *adsServer) bannerWatchedHandler(w http.ResponseWriter, r *http.Request)
 	err = json.Unmarshal(rawBody, &addClicks)
 
 	a.analyticsStorage.addViewToDB(addClicks.BannerID, addClicks.TelegramID)
+	a.userStorage.addMoney(addClicks.TelegramID, MoneyForView)
 }
 
 func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) {

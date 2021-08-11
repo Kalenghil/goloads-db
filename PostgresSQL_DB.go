@@ -208,4 +208,16 @@ func (u *UserStorage) resetUserMoney(telegramID int) {
 
 }
 
+func (u *UserStorage) addMoney(telegramID int, moneyAmount float64) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`UPDATE "Users"
+			SET "Money"="Money"+$1
+			WHERE ID=$2`,moneyAmount, telegramID)
+
+}
 // func (a *BannerStorage) getAdvertisementFromDB (id string)
