@@ -235,7 +235,7 @@ func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
 	defer db.Close()
 
 	var telegramID int
-	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID" = $1;`, extensionID)
+	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID" ='gmeanoeccifiooemhhhfpiegipoajpfd';`)
 	row.Scan(&telegramID)
 	return telegramID
 }
