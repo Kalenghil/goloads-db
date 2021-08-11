@@ -184,7 +184,6 @@ func (a *UserStorage) getUserByID(telegramID int) User {
 		&user.ID,
 		&user.Account,
 		&user.Money,
-		&user.Token,
 	); err != nil {
 		fmt.Println(err)
 		return User{}
