@@ -98,7 +98,6 @@ func (a *adsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Reques
 
 	rawData, err := ioutil.ReadAll(r.Body)
 	checkForError(err, http.StatusBadRequest, w)
-	fmt.Println(string(rawData))
 
 	var id_request ExtensionIDRequest
 	err = json.Unmarshal(rawData, &id_request)
@@ -108,7 +107,6 @@ func (a *adsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Reques
 	id_response.TelegramID = a.userStorage.returnUserIDFromExtensionID(id_request.ExtensionID)
 
 	bytes, err := json.Marshal(id_response)
-	fmt.Println(string(bytes))
 	w.Write(bytes)
 }
 

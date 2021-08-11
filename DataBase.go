@@ -13,6 +13,8 @@ type User struct {
 	PhotoURL    string  `json:"photo_url"`
 	Username    string  `json:"username"`
 	Hash        string  `json:"hash"`
+	Gotubles    int     `json:"gotubles"`
+	Gopeykis    int     `json:"gopeykis"`
 	ExtensionID string  `json:"extension_id"`
 }
 
