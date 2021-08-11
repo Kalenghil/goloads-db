@@ -15,7 +15,7 @@ type MoneyRequest struct {
 	Description string  `json:"description"`
 }
 
-func sendMoneyToUser(user_id int, money_am float64) error {
+func sendMoneyToUser(user_id int, money_am float64) (*http.Response, error) {
 	var moneyRequest = MoneyRequest{
 		Token:       GoLoAdsToken,
 		AccountID:   user_id,
@@ -25,6 +25,6 @@ func sendMoneyToUser(user_id int, money_am float64) error {
 
 	postBody, _ := json.Marshal(moneyRequest)
 	responseBody := bytes.NewBuffer(postBody)
-	_, err := http.Post("https://bank.goto.msk.ru/api/send", "application/json", responseBody)
-	return err
+	response, err := http.Post("https://bank.goto.msk.ru/api/send", "application/json", responseBody)
+	return response, err
 }

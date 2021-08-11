@@ -326,18 +326,19 @@ func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 	err = json.Unmarshal(rawBytes, &userToSendMoney)
 	checkForError(err, http.StatusBadRequest, w)
 
-	err = sendMoneyToUser(userToSendMoney.TelegramID, a.userStorage.getUserByID(userToSendMoney.TelegramID).Money)
-	if err != nil {
+	response, err := sendMoneyToUser(userToSendMoney.TelegramID, a.userStorage.getUserByID(userToSendMoney.TelegramID).Money)
+
+	if err != nil || response.StatusCode != http.StatusOK {
 		returnHTTPError(http.StatusInternalServerError, w)
 		return
 	} else {
 		a.userStorage.resetUserMoney(userToSendMoney.TelegramID)
 	}
 
-	var Test test
+	
 	Test.Body = "OK"
 
-	bytes, err := json.Marshal(Test)
+	bytes, err := ioutil.ReadAll(response.Body)
 	checkForError(err, http.StatusInternalServerError, w)
 	w.Write(bytes)
 }
