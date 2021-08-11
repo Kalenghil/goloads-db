@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/lib/pq"
-
 	_ "github.com/lib/pq"
+	"time"
 )
 
 /*const (
@@ -27,7 +27,7 @@ const (
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
 	host, port, user, password, dbname)
 
-func InnitializeDB() *sql.DB {
+func InitializeDB() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s",
 		host, port, user, password, dbname)
@@ -42,22 +42,11 @@ func InnitializeDB() *sql.DB {
 		panic(err)
 	}
 
-	_, err = db.Query(`CREATE TABLE IF NOT EXISTS "Banners"
-							(
-    							"BannerID" text not null,
-								"DomainURL" text not null,
-								"Image"text,
-								"Domains" text[]
-							);`)
-	if err != nil {
-		return nil
-	}
-
 	fmt.Println("Successfully connected!")
 	return db
 }
 
-func (b *BannerStorage) putAdvertisementIntoDB(id string) {
+func (b *BannerStorage) putBannerIntoDB(id string) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -101,7 +90,7 @@ func (b *BannerStorage) putAdvertisementIntoDB(id string) {
 	}
 }
 
-func (b *BannerStorage) getAdvertisementsFromDB() []Banner {
+func (b *BannerStorage) getBannersFromDB() []Banner {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -132,19 +121,52 @@ func (b *BannerStorage) getAdvertisementsFromDB() []Banner {
 	return banners
 }
 
-func (a *AnalyticsStorage) addClickToDB(id string) {
+func (a *AnalyticsStorage) addClickToDB(banner_id string, user_id int) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	_, err = db.Query(`UPDATE "Analytics" SET "Clicks"="clicks" + 1 WHERE BannerID=$1`, id)
+	_, err = db.Query(`INSERT INTO "Clicks" VALUES ($1, $2, $3)`, banner_id, user_id, time.Now().Unix())
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+}
+
+func (a *AnalyticsStorage) addViewToDB(banner_id string, user_id int) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`INSERT INTO "Views" VALUES ($1, $2, $3)`, banner_id, user_id, time.Now().Unix())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+func (a *AnalyticsStorage) addUserToDB(user User) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	_, err = db.Query(`INSERT INTO "User" ("Firstname", "Lastname", ID, "Account") VALUES ($1, $2, $3, $4)`,
+		user.Firstname,
+		user.Lastname,
+		user.ID,
+		user.Account,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func (a *UserStorage) getUserByID(telegramID int) User {
@@ -163,7 +185,7 @@ func (a *UserStorage) getUserByID(telegramID int) User {
 		&user.Account,
 		&user.Money,
 		&user.Token,
-		); err != nil {
+	); err != nil {
 		fmt.Println(err)
 		return User{}
 	}

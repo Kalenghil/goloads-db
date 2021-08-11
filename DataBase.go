@@ -41,11 +41,11 @@ type AnalyticsStorage struct {
 	AnalyticsMap map[string]Analytics
 }
 
-func (a *BannerStorage) addAdvertisement(ad Banner) {
+func (a *BannerStorage) addBanner(ad Banner) {
 	a.BannerMap[ad.BannerID] = ad
 }
 
-func (a *BannerStorage) getAdvertisements() Banner {
+func (a *BannerStorage) getRandomBanner() Banner {
 	var ads []Banner
 	for _, ad := range a.BannerMap {
 		ads = append(ads, ad)
@@ -61,10 +61,26 @@ func (b BannerStorage) sendBanner(id string) Banner {
 	return b.BannerMap[id]
 }
 
+func (b *BannerStorage) changeBannerImage(id string, image string) {
+	tempBanner := Banner{
+		BannerID:    b.BannerMap[id].BannerID,
+		Image:       image,
+		DomainURL:   b.BannerMap[id].DomainURL,
+		Domains:     b.BannerMap[id].Domains,
+		ImageBase64: b.BannerMap[id].ImageBase64,
+	}
+
+	b.BannerMap[id] = tempBanner
+}
+
 func (a AnalyticsStorage) getAnalytics(id string) Analytics {
 	return a.AnalyticsMap[id]
 }
 
-func (a AnalyticsStorage) addClick(id string) {
+func (a *AnalyticsStorage) addClick(id string) {
 	a.AnalyticsMap[id].Clicks[0]++
+}
+
+func (a *AnalyticsStorage) addWatch(id string) {
+	a.AnalyticsMap[id].Views[0]++
 }

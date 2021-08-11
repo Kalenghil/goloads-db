@@ -10,10 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type DataBase interface {
-	getUserFromId()
-}
-
 type adsServer struct {
 	userStorage      UserStorage
 	bannerStorage    BannerStorage
@@ -22,6 +18,11 @@ type adsServer struct {
 
 type BannerIDRequest struct {
 	ID string `json:"id"`
+}
+
+type BannerGotInteractedRequest struct {
+	BannerID   string `json:"banner_id"`
+	TelegramID int    `json:"user_id"`
 }
 
 type TelegramIDRequest struct {
@@ -34,12 +35,20 @@ type MoneyResponse struct {
 
 type BannerRequest struct {
 	URL     string   `json:"url"`
-	Image   string   `json:"image"`
 	Domains []string `json:"domains"`
 }
 
 type test struct {
 	Body string `json:"body"`
+}
+
+type newUserRequest struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Hash      string `json:"hash"`
+	ID        int    `json:"id"`
+	PhotoUrl  string `json:"photoUrl"`
+	UserName  string `json:"username"`
 }
 
 var Test = test{Body: "OK"}
@@ -58,7 +67,7 @@ func checkForError(err error, errorCode int, w http.ResponseWriter) {
 	}
 }
 
-func returnHTTPError(errorCode int, w http.ResponseWriter){
+func returnHTTPError(errorCode int, w http.ResponseWriter) {
 	http.Error(w, http.StatusText(errorCode), errorCode)
 }
 
@@ -102,7 +111,7 @@ func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) 
 func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
-	ads := a.bannerStorage.getAdvertisements()
+	ads := a.bannerStorage.getRandomBanner()
 
 	bytes, err := json.Marshal(ads)
 	checkForError(err, http.StatusInternalServerError, w)
@@ -110,7 +119,7 @@ func (a *adsServer) sendBannerHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bytes))
 }
 
-func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
+/*func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	if r.Method != "POST" {
@@ -120,24 +129,24 @@ func (a *adsServer) receivePostHandler(w http.ResponseWriter, r *http.Request) {
 	rawBody, err := ioutil.ReadAll(r.Body)
 	fmt.Println(string(rawBody))
 	checkForError(err, http.StatusBadRequest, w)
-	var newAdvertisement Banner
-	err = json.Unmarshal(rawBody, &newAdvertisement)
+	var newBanner Banner
+	err = json.Unmarshal(rawBody, &newBanner)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	a.bannerStorage.addAdvertisement(newAdvertisement)
+	a.bannerStorage.addBanner(newBanner)
 
-	a.bannerStorage.putAdvertisementIntoDB(newAdvertisement.BannerID)
+	a.bannerStorage.putBannerIntoDB(newBanner.BannerID)
 
 	bytes, err := json.Marshal(Test)
 	checkForError(err, http.StatusInternalServerError, w)
 
 	fmt.Fprint(w, string(bytes))
 
-}
+}*/
 
-func (a *adsServer) receiveClickHandler(w http.ResponseWriter, r *http.Request) {
+func (a *adsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
 		http.Error(w,
@@ -150,11 +159,10 @@ func (a *adsServer) receiveClickHandler(w http.ResponseWriter, r *http.Request) 
 	fmt.Println(string(rawBody))
 	checkForError(err, http.StatusBadRequest, w)
 
-	var addClicks BannerIDRequest
-	err = json.Unmarshal(rawBody, &addClicks)
+	var addView BannerGotInteractedRequest
+	err = json.Unmarshal(rawBody, &addView)
 
-	a.analyticsStorage.addClick(addClicks.ID)
-	a.analyticsStorage.addClickToDB(addClicks.ID)
+	a.analyticsStorage.addClickToDB(addView.BannerID, addView.TelegramID)
 }
 
 func (a *adsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +184,49 @@ func (a *adsServer) sendFaviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "favicon.ico")
 }
 
-func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Request) {
+var newBanner Banner
+
+func (a *adsServer) receiveBannerFromAdmin1(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+
+	rawData, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	var newBannerRequest BannerRequest
+	if err := json.Unmarshal(rawData, &newBannerRequest); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	newBanner.BannerID = RandomString(20)
+	newBanner.Domains = newBannerRequest.Domains
+	newBanner.DomainURL = newBannerRequest.URL
+	newBanner.Image = ""
+	newBanner.ImageBase64 = true
+
+	var IDResponse BannerIDRequest
+	IDResponse.ID = newBanner.BannerID
+	bytes, err := json.Marshal(IDResponse)
+	checkForError(err, http.StatusInternalServerError, w)
+
+	a.bannerStorage.addBanner(newBanner)
+	w.Write(bytes)
+}
+
+func (a *adsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+
+	rawData, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	bannerID := r.URL.Query().Get("id")
+
+	a.bannerStorage.changeBannerImage(bannerID, string(rawData))
+	a.bannerStorage.putBannerIntoDB(bannerID)
+
+}
+
+/*func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 
 	rawData, err := ioutil.ReadAll(r.Body)
@@ -188,25 +238,24 @@ func (a *adsServer) receiveBannerImageHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var newAdvertisement Banner
-	newAdvertisement.BannerID = RandomString(19)
-	newAdvertisement.Image = newImage.Image
-	newAdvertisement.Domains = newImage.Domains
-	newAdvertisement.DomainURL = newImage.URL
-	newAdvertisement.ImageBase64 = true
+	var newBanner Banner
+	newBanner.BannerID = RandomString(20)
+	newBanner.Domains = newImage.Domains
+	newBanner.DomainURL = newImage.URL
+	newBanner.ImageBase64 = true
 
-	a.bannerStorage.addAdvertisement(newAdvertisement)
-	a.bannerStorage.putAdvertisementIntoDB(newAdvertisement.BannerID)
+	a.bannerStorage.addBanner(newBanner)
+	a.bannerStorage.putBannerIntoDB(newBanner.BannerID)
 
 	w.WriteHeader(http.StatusOK)
 
-}
+}*/
 
 func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
-	 	returnHTTPError(http.StatusBadRequest, w)
-	 	return
+		returnHTTPError(http.StatusBadRequest, w)
+		return
 	}
 
 	var newRequest TelegramIDRequest
@@ -222,6 +271,42 @@ func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 	moneyAm.Money = user.Money
 	bytes, err := json.Marshal(moneyAm)
 	w.Write(bytes)
+}
+
+func (a *adsServer) bannerWatchedHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+	if r.Method != "POST" {
+		http.Error(w,
+			http.StatusText(http.StatusBadRequest),
+			http.StatusOK)
+		return
+	}
+
+	rawBody, err := ioutil.ReadAll(r.Body)
+	fmt.Println(string(rawBody))
+	checkForError(err, http.StatusBadRequest, w)
+
+	var addClicks BannerGotInteractedRequest
+	err = json.Unmarshal(rawBody, &addClicks)
+
+	a.analyticsStorage.addViewToDB(addClicks.BannerID, addClicks.TelegramID)
+}
+
+func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+
+	if r.Method != "POST" {
+		returnHTTPError(http.StatusBadRequest, w)
+		return
+	}
+
+	rawBytes, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	var newUser User
+	err = json.Unmarshal(rawBytes, &newUser)
+	checkForError(err, http.StatusBadRequest, w)
+
 }
 
 func main() {
@@ -251,18 +336,19 @@ func main() {
 
 	// initializing PostgreSQL database
 
-	InnitializeDB()
+	InitializeDB()
 
 	// initializing http handlers
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(AdsServer.sendBannerHandler))
 	mux.Handle("/delete", http.HandlerFunc(AdsServer.deleteBannerHandler))
-	mux.Handle("add/image", http.HandlerFunc(AdsServer.receiveBannerImageHandler))
+	mux.Handle("/add/image", http.HandlerFunc(AdsServer.receiveBannerFromAdmin2))
 	mux.Handle("/favicon.ico", http.HandlerFunc(AdsServer.sendFaviconHandler))
-	mux.Handle("/add", http.HandlerFunc(AdsServer.receivePostHandler))
+	mux.Handle("/add", http.HandlerFunc(AdsServer.receiveBannerFromAdmin1))
 	mux.Handle("/analytics", http.HandlerFunc(AdsServer.sendAnalyticsHandler))
-	mux.Handle("/clicked", http.HandlerFunc(AdsServer.receiveClickHandler))
+	mux.Handle("/clicked", http.HandlerFunc(AdsServer.bannerClickedHandler))
+	mux.Handle("/watched", http.HandlerFunc(AdsServer.bannerWatchedHandler))
 	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }
