@@ -30,7 +30,8 @@ type TelegramIDRequest struct {
 }
 
 type MoneyResponse struct {
-	Money float64 `json:"money"`
+	Money    float64 `json:"money"`
+	Username string  `json:"username"`
 }
 
 type BannerRequest struct {
@@ -251,24 +252,6 @@ func (a *adsServer) receiveBannerFromAdmin2(w http.ResponseWriter, r *http.Reque
 
 }*/
 
-func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Request){
-	PreInnitiallizeStuff(w, r)
-	if r.Method != "POST" {
-		returnHTTPError(http.StatusBadRequest, w)
-		return
-	}
-
-	rawBytes, err := ioutil.ReadAll(r.Body)
-	checkForError(err, http.StatusBadRequest, w)
-
-	var sendMoneyRequest TelegramIDRequest
-	json.Unmarshal(rawBytes, &sendMoneyRequest)
-
-
-}
-
-
-
 func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) {
 	PreInnitiallizeStuff(w, r)
 	if r.Method != "POST" {
@@ -285,9 +268,10 @@ func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 
 	user := a.userStorage.getUserByID(newRequest.TelegramID)
 
-	var moneyAm MoneyResponse
-	moneyAm.Money = user.Money
-	bytes, err := json.Marshal(moneyAm)
+	var money MoneyResponse
+	money.Money = user.Money
+	money.Username = user.Username
+	bytes, err := json.Marshal(money)
 	w.Write(bytes)
 }
 
@@ -325,7 +309,37 @@ func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 	err = json.Unmarshal(rawBytes, &newUser)
 	checkForError(err, http.StatusBadRequest, w)
 
+}
 
+func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+
+	if r.Method != "POST" {
+		returnHTTPError(http.StatusBadRequest, w)
+		return
+	}
+
+	rawBytes, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+
+	var userToSendMoney TelegramIDRequest
+	err = json.Unmarshal(rawBytes, &userToSendMoney)
+	checkForError(err, http.StatusBadRequest, w)
+
+	err = sendMoneyToUser(userToSendMoney.TelegramID, a.userStorage.getUserByID(userToSendMoney.TelegramID).Money)
+	if err != nil {
+		returnHTTPError(http.StatusInternalServerError, w)
+		return
+	} else {
+		a.userStorage.resetUserMoney(userToSendMoney.TelegramID)
+	}
+
+	var Test test
+	Test.Body = "OK"
+
+	bytes, err := json.Marshal(Test)
+	checkForError(err, http.StatusInternalServerError, w)
+	w.Write(bytes)
 }
 
 func main() {
@@ -369,5 +383,6 @@ func main() {
 	mux.Handle("/clicked", http.HandlerFunc(AdsServer.bannerClickedHandler))
 	mux.Handle("/watched", http.HandlerFunc(AdsServer.bannerWatchedHandler))
 	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
+	mux.Handle("/info/withdraw", http.HandlerFunc(AdsServer.sendMoneyToUserHandler))
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }

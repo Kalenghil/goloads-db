@@ -9,21 +9,22 @@ import (
 var GoLoAdsToken string
 
 type MoneyRequest struct {
-	Token       string `json:"token"`
-	AccountID   int    `json:"account_id"`
-	Amount      int    `json:"amount"`
-	Description string `json:"description"`
+	Token       string  `json:"token"`
+	AccountID   int     `json:"account_id"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description"`
 }
 
-func sendMoneyToUser(user_id int, money_am float64) {
+func sendMoneyToUser(user_id int, money_am float64) error {
 	var moneyRequest = MoneyRequest{
 		Token:       GoLoAdsToken,
 		AccountID:   user_id,
-		Amount:      int(money_am),
+		Amount:      money_am,
 		Description: "Вывод средств со счёта GoloAds на счет пользователя",
 	}
 
 	postBody, _ := json.Marshal(moneyRequest)
 	responseBody := bytes.NewBuffer(postBody)
-	http.Post("https://bank.goto.msk.ru/api/send", "application/json", responseBody)
+	_, err := http.Post("https://bank.goto.msk.ru/api/send", "application/json", responseBody)
+	return err
 }
