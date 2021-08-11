@@ -335,11 +335,12 @@ func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 		a.userStorage.resetUserMoney(userToSendMoney.TelegramID)
 	}
 
-	
+
 	Test.Body = "OK"
 
 	bytes, err := ioutil.ReadAll(response.Body)
 	checkForError(err, http.StatusInternalServerError, w)
+	fmt.Println(string(bytes))
 	w.Write(bytes)
 }
 
