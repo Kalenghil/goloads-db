@@ -301,7 +301,7 @@ func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 	user := a.userStorage.getUserByID(newRequest.TelegramID)
 
 	var money MoneyResponse
-	money.Money = user.Money
+	money.Money = GtToMoney(user.Gotubles, user.Gopeykis)
 	money.Username = user.Username
 	money.PhotoURL = user.PhotoURL
 	bytes, err := json.Marshal(money)
