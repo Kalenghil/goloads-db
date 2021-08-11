@@ -83,7 +83,7 @@ func returnHTTPError(errorCode int, w http.ResponseWriter) {
 }
 
 func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("got request with method", r.Method, counter)
+	fmt.Println("got request with method", r.Method, counter, "URL:", r.URL)
 	counter++
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
