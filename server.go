@@ -429,6 +429,7 @@ func main() {
 	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
 	mux.Handle("/info/withdraw", http.HandlerFunc(AdsServer.sendMoneyToUserHandler))
 	mux.Handle("/user", http.HandlerFunc(AdsServer.sendExtensionIDHandler))
+	mux.Handle("/register", http.HandlerFunc(AdsServer.registerUserHandler))
 
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }
