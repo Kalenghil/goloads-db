@@ -24,8 +24,14 @@ const (
 	dbname   = "goloads"
 )
 
-func IntToFloat (gt int, gp int) float64 {
-	return 0.0
+func GtToMoney(gt int, gp int) float64 {
+	return float64(gt) + (float64(gp) / 100)
+}
+
+func MoneyToGT(money float64) (int, int) {
+	gt := int(money)
+	gp := int((money - float64(gt)) * 100)
+	return gt, gp
 }
 
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
@@ -154,7 +160,7 @@ func (a *AnalyticsStorage) addViewToDB(banner_id string, user_id int) {
 	}
 }
 
-func (a *AnalyticsStorage) addUserToDB(user User) {
+func (a *UserStorage) addUserToDB(user User) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
@@ -210,7 +216,7 @@ func (u *UserStorage) resetUserMoney(telegramID int) {
 	defer db.Close()
 
 	_, err = db.Query(`UPDATE "Users"
-			SET "Money"=0.0
+			SET "Gotubles"=0, "Gopeykis"=0
 			WHERE ID=$1`, telegramID)
 
 }
@@ -222,11 +228,12 @@ func (u *UserStorage) addMoney(telegramID int, moneyAmount float64) {
 	}
 	defer db.Close()
 
+	gt, gp := MoneyToGT(moneyAmount)
 	_, err = db.Query(`UPDATE "Users"
-			SET "Money"="Money"+$1
-			WHERE ID=$2`,moneyAmount, telegramID)
-
-
+			SET "Gotubles"="Gotubles"+$1,
+			    "Gopeykis"="Gopeykis"+$2
+			WHERE ID=$3`,
+		gt, gp, telegramID)
 
 }
 
@@ -239,7 +246,7 @@ func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
 
 	var telegramID int
 	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID"=$1`, extensionID)
-	err 	= row.Scan(&telegramID)
+	err = row.Scan(&telegramID)
 	if err != nil {
 		fmt.Println(err)
 		return 0
@@ -247,4 +254,5 @@ func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
 	return telegramID
 
 }
+
 // func (a *BannerStorage) getAdvertisementFromDB (id string)

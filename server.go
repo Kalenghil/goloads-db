@@ -339,9 +339,18 @@ func (a *adsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 	rawBytes, err := ioutil.ReadAll(r.Body)
 	checkForError(err, http.StatusBadRequest, w)
 
-	var newUser newUserRequest
-	err = json.Unmarshal(rawBytes, &newUser)
+	var NewUserRequest newUserRequest
+	err = json.Unmarshal(rawBytes, &NewUserRequest)
 	checkForError(err, http.StatusBadRequest, w)
+
+	var newUser User
+	newUser.Firstname = NewUserRequest.FirstName
+	newUser.Lastname = NewUserRequest.LastName
+	newUser.ID = NewUserRequest.ID
+	newUser.Account = NewUserRequest.ID
+	newUser.Money = 0.0
+
+	a.userStorage.addUserToDB(newUser)
 
 }
 
