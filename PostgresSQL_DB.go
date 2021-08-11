@@ -24,6 +24,10 @@ const (
 	dbname   = "goloads"
 )
 
+func IntToFloat (gt int, gp int) float64 {
+	return 0.0
+}
+
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
 	host, port, user, password, dbname)
 
@@ -219,5 +223,20 @@ func (u *UserStorage) addMoney(telegramID int, moneyAmount float64) {
 			SET "Money"="Money"+$1
 			WHERE ID=$2`,moneyAmount, telegramID)
 
+
+
+}
+
+func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var telegramID int
+	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID"=$1`, extensionID)
+	row.Scan(&extensionID)
+	return telegramID
 }
 // func (a *BannerStorage) getAdvertisementFromDB (id string)

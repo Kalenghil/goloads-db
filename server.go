@@ -12,8 +12,12 @@ import (
 
 const (
 	MoneyForView = 0.1
-	MoneyForClick = 0.5
+	MoneyForClick = 0.3
 )
+
+type ExtensionIDRequest struct{
+	ExtensionID string `json:"extension_id"`
+}
 
 type adsServer struct {
 	userStorage      UserStorage
@@ -83,6 +87,28 @@ func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
+}
+
+func (a *adsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Request) {
+	PreInnitiallizeStuff(w, r)
+
+	if r.Method != "POST" {
+		returnHTTPError(http.StatusBadRequest, w)
+	}
+
+	rawData, err := ioutil.ReadAll(r.Body)
+	checkForError(err, http.StatusBadRequest, w)
+	fmt.Println(string(rawData))
+
+	var id_request ExtensionIDRequest
+	err = json.Unmarshal(rawData, &id_request)
+	checkForError(err, http.StatusBadRequest, w)
+
+	var id_response TelegramIDRequest
+	id_response.TelegramID = a.userStorage.returnUserIDFromExtensionID(id_request.ExtensionID)
+
+	bytes, err := json.Marshal(id_response)
+	w.Write(bytes)
 }
 
 func (a *adsServer) deleteBannerHandler(w http.ResponseWriter, r *http.Request) {
@@ -393,5 +419,6 @@ func main() {
 	mux.Handle("/watched", http.HandlerFunc(AdsServer.bannerWatchedHandler))
 	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
 	mux.Handle("/info/withdraw", http.HandlerFunc(AdsServer.sendMoneyToUserHandler))
+	mux.Handle("/user", http.HandlerFunc(AdsServer.sendExtensionIDHandler))
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }
