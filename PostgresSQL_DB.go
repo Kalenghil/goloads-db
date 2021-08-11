@@ -235,9 +235,9 @@ func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
 	}
 	defer db.Close()
 
-	var user User
-	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID" like 'gmeanoeccifiooemhhhfpiegipoajpfd';`)
-	row.Scan(&user.ID)
-	return user.ID
+	var telegramID int
+	row := db.QueryRow(`SELECT "id" FROM "Users" WHERE "ExtentionID"=$1`, extensionID)
+	row.Scan(&telegramID)
+	return telegramID
 }
 // func (a *BannerStorage) getAdvertisementFromDB (id string)
