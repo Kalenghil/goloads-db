@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	MoneyForView = 0.1
+	MoneyForView  = 0.1
 	MoneyForClick = 0.3
 )
 
-type ExtensionIDRequest struct{
+type ExtensionIDRequest struct {
 	ExtensionID string `json:"extension_id"`
 }
 
@@ -41,6 +41,7 @@ type TelegramIDRequest struct {
 type MoneyResponse struct {
 	Money    float64 `json:"money"`
 	Username string  `json:"username"`
+	PhotoURL string  `json:"photo_url"`
 }
 
 type BannerRequest struct {
@@ -302,6 +303,7 @@ func (a *adsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 	var money MoneyResponse
 	money.Money = user.Money
 	money.Username = user.Username
+	money.PhotoURL = user.PhotoURL
 	bytes, err := json.Marshal(money)
 	w.Write(bytes)
 }
@@ -360,13 +362,12 @@ func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 
 	response, err := sendMoneyToUser(userToSendMoney.TelegramID, a.userStorage.getUserByID(userToSendMoney.TelegramID).Money)
 
-	if err != nil{
+	if err != nil {
 		returnHTTPError(http.StatusInternalServerError, w)
 		return
 	} else {
 		a.userStorage.resetUserMoney(userToSendMoney.TelegramID)
 	}
-
 
 	Test.Body = "OK"
 
@@ -419,5 +420,6 @@ func main() {
 	mux.Handle("/info/get", http.HandlerFunc(AdsServer.getUserMoneyHandler))
 	mux.Handle("/info/withdraw", http.HandlerFunc(AdsServer.sendMoneyToUserHandler))
 	mux.Handle("/user", http.HandlerFunc(AdsServer.sendExtensionIDHandler))
+
 	log.Fatal(http.ListenAndServeTLS("doats.ml:8080", "certificate.crt", "private.key", mux))
 }
