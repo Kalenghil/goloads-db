@@ -5,14 +5,15 @@ import (
 )
 
 type User struct {
-	Firstname string  `json:"firstname"`
-	Lastname  string  `json:"lastname"`
-	ID        int     `json:"id"`
-	Account   int     `json:"account"`
-	Money     float64 `json:"money"`
-	PhotoURL  string  `json:"photo_url"`
-	Username  string  `json:"username"`
-	Hash      string  `json:"hash"`
+	Firstname   string  `json:"firstname"`
+	Lastname    string  `json:"lastname"`
+	ID          int     `json:"id"`
+	Account     int     `json:"account"`
+	Money       float64 `json:"money"`
+	PhotoURL    string  `json:"photo_url"`
+	Username    string  `json:"username"`
+	Hash        string  `json:"hash"`
+	ExtensionID string  `json:"extension_id"`
 }
 
 type UserStorage struct {

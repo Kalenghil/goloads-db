@@ -191,6 +191,7 @@ func (a *UserStorage) getUserByID(telegramID int) User {
 		&user.PhotoURL,
 		&user.Username,
 		&user.Hash,
+		&user.ExtensionID,
 	); err != nil {
 		fmt.Println(err)
 		return User{}
@@ -234,9 +235,9 @@ func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
 	}
 	defer db.Close()
 
-	var telegramID int
-	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID" ='gmeanoeccifiooemhhhfpiegipoajpfd';`)
-	row.Scan(&telegramID)
-	return telegramID
+	var user User
+	row := db.QueryRow(`SELECT ID FROM "Users" WHERE "ExtensionID" like 'gmeanoeccifiooemhhhfpiegipoajpfd';`)
+	row.Scan(&user.ID)
+	return user.ID
 }
 // func (a *BannerStorage) getAdvertisementFromDB (id string)
