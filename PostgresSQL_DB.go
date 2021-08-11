@@ -237,7 +237,13 @@ func (u *UserStorage) returnUserIDFromExtensionID(extensionID string) int {
 
 	var telegramID int
 	row := db.QueryRow(`SELECT "Account" FROM "Users" WHERE "ExtensionID"=$1`, extensionID)
-	row.Scan(&telegramID)
+	err 	= row.Scan(&telegramID)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	fmt.Println(telegramID)
 	return telegramID
+
 }
 // func (a *BannerStorage) getAdvertisementFromDB (id string)
