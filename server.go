@@ -328,7 +328,7 @@ func (a *adsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 
 	response, err := sendMoneyToUser(userToSendMoney.TelegramID, a.userStorage.getUserByID(userToSendMoney.TelegramID).Money)
 
-	if err != nil || response.StatusCode != http.StatusOK {
+	if err != nil{
 		returnHTTPError(http.StatusInternalServerError, w)
 		return
 	} else {
