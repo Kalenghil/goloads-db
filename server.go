@@ -258,10 +258,11 @@ func (a *AdsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 
 	var newRequest TelegramIDRequest
 	rawBytes, err := ioutil.ReadAll(r.Body)
-	checkForError(err, http.StatusBadRequest, w)
+	checkForError(err, http.StatusBadRequest, w)	
 
 	err = json.Unmarshal(rawBytes, &newRequest)
 	checkForError(err, http.StatusBadRequest, w)
+	fmt.Println(newRequest)
 
 	user := a.userStorage.getUserByID(newRequest.TelegramID)
 
