@@ -9,8 +9,8 @@ type BannerIDRequest struct {
 }
 
 type BannerGotInteractedRequest struct {
-	BannerID   string `json:"banner_id"`
-	TelegramID int    `json:"user_id"`
+	BannerID    string `json:"banner_id"`
+	ExtensionID string `json:"extension_id"`
 }
 
 type TelegramIDRequest struct {

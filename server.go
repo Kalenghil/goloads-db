@@ -156,11 +156,12 @@ func (a *AdsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request)
 	fmt.Println(string(rawBody))
 	checkForError(err, http.StatusBadRequest, w)
 
-	var addView BannerGotInteractedRequest
-	err = json.Unmarshal(rawBody, &addView)
+	var addClick BannerGotInteractedRequest
+	err = json.Unmarshal(rawBody, &addClick)
 
-	a.analyticsStorage.addClickToDB(addView.BannerID, addView.TelegramID)
-	a.userStorage.addMoney(addView.TelegramID, MoneyForClick)
+	user := a.userStorage.getUserByID(a.userStorage.returnUserIDFromExtensionID(addClick.ExtensionID))
+	a.analyticsStorage.addClickToDB(addClick.BannerID, user.ID)
+	a.userStorage.addMoney(user.ID, MoneyForClick)
 }
 
 func (a *AdsServer) sendAnalyticsHandler(w http.ResponseWriter, r *http.Request) {
@@ -289,11 +290,12 @@ func (a *AdsServer) bannerWatchedHandler(w http.ResponseWriter, r *http.Request)
 	fmt.Println(string(rawBody))
 	checkForError(err, http.StatusBadRequest, w)
 
-	var addClicks BannerGotInteractedRequest
-	err = json.Unmarshal(rawBody, &addClicks)
+	var addView BannerGotInteractedRequest
+	err = json.Unmarshal(rawBody, &addView)
 
-	a.analyticsStorage.addViewToDB(addClicks.BannerID, addClicks.TelegramID)
-	a.userStorage.addMoney(addClicks.TelegramID, MoneyForView)
+	user := a.userStorage.getUserByID(a.userStorage.returnUserIDFromExtensionID(addView.ExtensionID))
+	a.analyticsStorage.addViewToDB(addView.BannerID, user.ID)
+	a.userStorage.addMoney(user.ID, MoneyForClick)
 }
 
 func (a *AdsServer) registerUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -355,7 +357,7 @@ func (a *AdsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 
 	Test.Body = "OK"
 
-	a.analyticsStorage.addTransactionToDB(userToSendMoney.TelegramID, moneyAm, statusOK)
+	a.analyticsStorage.addTransactionToDB(userToSendMoney.ID, moneyAm, statusOK)
 	bytes, err := ioutil.ReadAll(response.Body)
 	checkForError(err, http.StatusInternalServerError, w)
 	fmt.Println(string(bytes))
