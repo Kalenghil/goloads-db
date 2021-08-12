@@ -333,21 +333,23 @@ func (a *AdsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 	rawBytes, err := ioutil.ReadAll(r.Body)
 	checkForError(err, http.StatusBadRequest, w)
 
-	var userToSendMoney TelegramIDRequest
-	err = json.Unmarshal(rawBytes, &userToSendMoney)
+	var extensionRequest ExtensionIDRequest
+	err = json.Unmarshal(rawBytes, &extensionRequest)
 	checkForError(err, http.StatusBadRequest, w)
 
+	userToSendMoney := a.userStorage.getUserByID(a.userStorage.returnUserIDFromExtensionID(extensionRequest.ExtensionID))
+
 	var moneyAm = GtToMoney(
-		a.userStorage.getUserByID(userToSendMoney.TelegramID).Gotubles,
-		a.userStorage.getUserByID(userToSendMoney.TelegramID).Gopeykis)
+		a.userStorage.getUserByID(userToSendMoney.ID).Gotubles,
+		a.userStorage.getUserByID(userToSendMoney.ID).Gopeykis)
 	var statusOK = false
-	response, err := sendMoneyToUser(userToSendMoney.TelegramID, moneyAm)
+	response, err := sendMoneyToUser(userToSendMoney.ID, moneyAm)
 
 	if err != nil || response.StatusCode != http.StatusOK{
 		returnHTTPError(http.StatusInternalServerError, w)
 		return
 	} else {
-		a.userStorage.resetUserMoney(userToSendMoney.TelegramID)
+		a.userStorage.resetUserMoney(userToSendMoney.ID)
 		statusOK = true
 	}
 
