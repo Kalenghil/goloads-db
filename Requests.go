@@ -14,7 +14,7 @@ type BannerGotInteractedRequest struct {
 }
 
 type TelegramIDRequest struct {
-	TelegramID int `json:"id"`
+	TelegramID int `json:"user_id"`
 }
 
 type MoneyResponse struct {
