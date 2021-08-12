@@ -52,6 +52,7 @@ func PreInnitiallizeStuff(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 }
 
 func (a *AdsServer) sendExtensionIDHandler(w http.ResponseWriter, r *http.Request) {
@@ -333,7 +334,9 @@ func (a *AdsServer) sendMoneyToUserHandler(w http.ResponseWriter, r *http.Reques
 	err = json.Unmarshal(rawBytes, &userToSendMoney)
 	checkForError(err, http.StatusBadRequest, w)
 
-	var moneyAm = a.userStorage.getUserByID(userToSendMoney.TelegramID).Money
+	var moneyAm = GtToMoney(
+		a.userStorage.getUserByID(userToSendMoney.TelegramID).Gotubles,
+		a.userStorage.getUserByID(userToSendMoney.TelegramID).Gopeykis)
 	var statusOK = false
 	response, err := sendMoneyToUser(userToSendMoney.TelegramID, moneyAm)
 
