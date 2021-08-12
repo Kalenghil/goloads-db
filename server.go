@@ -158,6 +158,7 @@ func (a *AdsServer) bannerClickedHandler(w http.ResponseWriter, r *http.Request)
 
 	var addClick BannerGotInteractedRequest
 	err = json.Unmarshal(rawBody, &addClick)
+	fmt.Println(string(rawBody))
 
 	user := a.userStorage.getUserByID(a.userStorage.returnUserIDFromExtensionID(addClick.ExtensionID))
 	a.analyticsStorage.addClickToDB(addClick.BannerID, user.ID)
