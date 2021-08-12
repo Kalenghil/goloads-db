@@ -256,16 +256,17 @@ func (a *AdsServer) getUserMoneyHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var newRequest TelegramIDRequest
+	var extensionRequest ExtensionIDRequest
 	rawBytes, err := ioutil.ReadAll(r.Body)
 	fmt.Println(string(rawBytes))
 	checkForError(err, http.StatusBadRequest, w)
 
-	err = json.Unmarshal(rawBytes, &newRequest)
+	err = json.Unmarshal(rawBytes, &extensionRequest)
 	checkForError(err, http.StatusBadRequest, w)
-	fmt.Println(newRequest)
+	fmt.Println(extensionRequest)
 
-	user := a.userStorage.getUserByID(newRequest.TelegramID)
+	userID := a.userStorage.returnUserIDFromExtensionID(extensionRequest.ExtensionID)
+	user := a.userStorage.getUserByID(userID)
 
 	var money MoneyResponse
 	money.Money = GtToMoney(user.Gotubles, user.Gopeykis)
